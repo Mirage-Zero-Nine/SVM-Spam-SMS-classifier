@@ -40,8 +40,19 @@ def statistics(bayes_out, svm_out):
     print("Average error rate: %.2f%%" % np.mean(svm_out[3]))
 
 
+def single_test(msg, train_size, test_size):
+    c = classifier_bayes.NaiveBayesClassifier(train_size, test_size)
+    c.single_input_classification(msg)
+    c1 = classifier_svm.SVMClassifier(train_size, test_size)
+    c1.single_input_classification(msg)
+
+
 if __name__ == '__main__':
     """
     Unit test
     """
-    statistics(bayes(1000, 200, 10), svm(1000, 200, 10))
+    # statistics(bayes(20, 20, 1), svm(20, 20, 1))
+    msg = "Our biggest sale of the year is coming to a close, don't miss your chance to save up to 50% on your favorites including Epionce, SkinMedica, Jurlique, and many more!"
+    single_test(msg, 400, 1)
+
+

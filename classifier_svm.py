@@ -45,10 +45,10 @@ class SVMClassifier(object):
         :param data: data
         :return: list contains all words
         """
-        vocal_list = set([])
+        out_set = set([])
         for document in data:
-            vocal_list = vocal_list | set(document)  # union of the two sets to remove duplication
-        return list(vocal_list)
+            out_set = out_set | set(document)
+        return list(out_set)
 
     @staticmethod
     def __convert_to_text_list(string):
@@ -83,24 +83,34 @@ class SVMClassifier(object):
         msg_list = []
         msg_label_list = []
 
+        print("Start loading messages.")
+
         # Read all spam messages (771 in total)
-        for i in range(1, 775):
-            spam = self.__convert_to_text_list(open('spam/%d.txt' % i).read())
+        for i in range(1, 455):
+            spam = self.__convert_to_text_list(open('spam1/%d.txt' % i).read())
             msg_list.append(spam)
             msg_label_list.append(1)
 
+        print("All spam messages loaded. ")
+
         # Read all ham messages (4825 in total)
-        for i in range(1, 4825):
-            ham = self.__convert_to_text_list(open('ham/%d.txt' % i).read())
+        for i in range(1, 2412):
+            ham = self.__convert_to_text_list(open('ham1/%d.txt' % i).read())
             msg_list.append(ham)
             msg_label_list.append(0)
 
+        print("All ham messages loaded. ")
+
         vocabulary_list = self.__create_vocabulary_list(msg_list)
+
+        print("Vocabulary list created. ")
 
         training_data_set = []
         training_data_label = []
         test_set = []
         test_label_set = []
+
+        print("Create training spam set. ")
 
         # Create training set (spam)
         while len(training_data_set) < int(self.train_size / 2):
@@ -113,6 +123,9 @@ class SVMClassifier(object):
                 del msg_list[index]
                 del msg_label_list[index]
 
+        print("Training spam set created. ")
+        print("Create training ham set. ")
+
         # Create training set (ham)
         while len(training_data_set) < self.train_size:
             index = random.randint(0, len(msg_list) - 1)
@@ -124,6 +137,9 @@ class SVMClassifier(object):
                 del msg_list[index]
                 del msg_label_list[index]
 
+        print("Training ham set created. ")
+        print("Create test set. ")
+
         # Create test set
         for i in range(0, self.test_size):
             index = random.randint(0, len(msg_list) - 1)
@@ -133,6 +149,8 @@ class SVMClassifier(object):
             # Avoid duplication
             del msg_list[index]
             del msg_label_list[index]
+
+        print("Data set created. ")
 
         return training_data_set, training_data_label, test_set, test_label_set, vocabulary_list
 
@@ -158,7 +176,7 @@ class SVMClassifier(object):
         kernel function: gaussian (rbf)
         """
         # kernel function: gaussian
-        out = svm.SVC(C=10, kernel='rbf', gamma='auto')
+        out = svm.SVC(C=12, kernel='linear')
 
         model = out.fit(data, label)
 
@@ -258,12 +276,13 @@ class SVMClassifier(object):
         """
 
         msg = self.__convert_to_text_list(msg)
-        # training, training_label, test_set, test_label_set, vocabulary_list = read_data(training_size, 1)
+
         training = self.__read_data()
+
         model = self.__svm_training(training[0], training[1], training[4])
-        # self.__single_message_classification(msg, model, training[4])
 
         v = self.__data_to_vector(training[4], msg)
+
         res = int(model.predict(np.array(v).reshape(1, -1))[0])
         if res == 1:
             print("This message is classified to spam message!")
@@ -279,6 +298,6 @@ if __name__ == '__main__':
     Unit test
     """
     # demo(1)
-    c = SVMClassifier(20, 10)
+    c = SVMClassifier(1000, 10)
     c.single_input_classification(
-        "Update_Now - Xmas Offer! Latest Motorola, SonyEricsson & Nokia & FREE Bluetooth! Double Mins & 1000 Txt on Orange. Call MobileUpd8 on 08000839402 or call2optout")
+        "Hi I'm sue. I am 20 years old and work as a lapdancer. I love sex. Text me live - I'm i my bedroom now. text SUE to 89555. By TextOperator G2 1DA 150ppmsg 18+")

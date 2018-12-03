@@ -36,6 +36,87 @@ class NaiveBayesClassifier(object):
         self.train_size = training_data_size
         self.test_size = test_data_size
 
+    def __read_data(self):
+        """
+        Generate both training set and test set for Naive Bayes classifier model.
+        :return: training set, corresponding training messages label, test set, corresponding label, vocabulary
+        """
+        # Check if value is legal
+
+        msg_list = []
+        msg_label_list = []
+
+        print("Start loading messages.")
+
+        # Read all spam messages (771 in total)
+        for i in range(1, 455):
+            spam = self.__convert_to_text_list(open('spam1/%d.txt' % i).read())
+            msg_list.append(spam)
+            msg_label_list.append(1)
+
+        print("All spam messages loaded. ")
+
+        # Read all ham messages (4825 in total)
+        for i in range(1, 2412):
+            ham = self.__convert_to_text_list(open('ham1/%d.txt' % i).read())
+            msg_list.append(ham)
+            msg_label_list.append(0)
+
+        print("All ham messages loaded. ")
+
+        vocabulary_list = self.__create_vocabulary_list(msg_list)
+
+        print("Vocabulary list created. ")
+
+        training_data_set = []
+        training_data_label = []
+        test_set = []
+        test_label_set = []
+
+        print("Create training spam set. ")
+
+        # Create training set (spam)
+        while len(training_data_set) < int(self.train_size / 2):
+            index = random.randint(0, len(msg_list) - 1)
+            if msg_label_list[index] == 1:
+                training_data_set.append(msg_list[index])
+                training_data_label.append(msg_label_list[index])
+
+                # Avoid duplication
+                del msg_list[index]
+                del msg_label_list[index]
+
+        print("Training spam set created. ")
+        print("Create training ham set. ")
+
+        # Create training set (ham)
+        while len(training_data_set) < self.train_size:
+            index = random.randint(0, len(msg_list) - 1)
+            if msg_label_list[index] == 0:
+                training_data_set.append(msg_list[index])
+                training_data_label.append(msg_label_list[index])
+
+                # Avoid duplication
+                del msg_list[index]
+                del msg_label_list[index]
+
+        print("Training ham set created. ")
+        print("Create test set. ")
+
+        # Create test set
+        for i in range(0, self.test_size):
+            index = random.randint(0, len(msg_list) - 1)
+            test_set.append(msg_list[index])
+            test_label_set.append(msg_label_list[index])
+
+            # Avoid duplication
+            del msg_list[index]
+            del msg_label_list[index]
+
+        print("Data set created. ")
+
+        return training_data_set, training_data_label, test_set, test_label_set, vocabulary_list
+
     @staticmethod
     def __create_vocabulary_list(data):
         """
@@ -112,100 +193,35 @@ class NaiveBayesClassifier(object):
         return [tok.lower() for tok in list_of_tokens if len(tok) > 2]
 
     @staticmethod
-    def __data_to_vector(vocab_list, input_set):
+    def __data_to_vector(vocab_list, input_list):
         """
 
         :param vocab_list:
-        :param input_set:
+        :param input_list:
         :return:
         """
         out = [0] * len(vocab_list)
 
-        for word in input_set:
+        for word in input_list:
             if word in vocab_list:
                 # Calculate word frequency
                 out[vocab_list.index(word)] += 1
         return out
 
-    def __read_data(self):
-        """
-        Generate both training set and test set for Naive Bayes classifier model.
-        :return: training set, corresponding training messages label, test set, corresponding label, vocabulary
-        """
-        # Check if value is legal
-
-        msg_list = []
-        msg_label_list = []
-
-        # Read all spam messages (771 in total)
-        for i in range(1, 771):
-            spam = self.__convert_to_text_list(open('spam/%d.txt' % i).read())
-            msg_list.append(spam)
-            msg_label_list.append(1)
-
-        # Read all ham messages (4825 in total)
-        for i in range(1, 4825):
-            ham = self.__convert_to_text_list(open('ham/%d.txt' % i).read())
-            msg_list.append(ham)
-            msg_label_list.append(0)
-
-        vocabulary_list = self.__create_vocabulary_list(msg_list)
-
-        training_data_set = []
-        training_data_label = []
-        test_set = []
-        test_label_set = []
-
-        # Create training set (spam)
-        while len(training_data_set) < int(self.train_size / 2):
-            index = random.randint(0, len(msg_list) - 1)
-            if msg_label_list[index] == 1:
-                training_data_set.append(msg_list[index])
-                training_data_label.append(msg_label_list[index])
-
-                # Avoid duplication
-                del msg_list[index]
-                del msg_label_list[index]
-
-        # Create training set (ham)
-        while len(training_data_set) < self.train_size:
-            index = random.randint(0, len(msg_list) - 1)
-            if msg_label_list[index] == 0:
-                training_data_set.append(msg_list[index])
-                training_data_label.append(msg_label_list[index])
-
-                # Avoid duplication
-                del msg_list[index]
-                del msg_label_list[index]
-
-        # Create test set
-        for i in range(0, self.test_size):
-            index = random.randint(0, len(msg_list) - 1)
-            test_set.append(msg_list[index])
-            test_label_set.append(msg_label_list[index])
-
-            # Avoid duplication
-            del msg_list[index]
-            del msg_label_list[index]
-
-        return training_data_set, training_data_label, test_set, test_label_set, vocabulary_list
-
-    def __training_bayes_model(self, training_set, training_label_set, vocabulary_list):
+    def __training_bayes_model(self, train_msg, train_label, vocabulary_list):
         """
         Generate word frequency vector for each message and train Naive Bayes classifier.
-        :param training_set:
-        :param training_label_set:
+        :param train_msg:
+        :param train_label:
         :param vocabulary_list:
         :return: p0_vector, p1_vector, p_spam
         """
         # Create message vector for each training message and append each message's label
-        training_matrix = []
-        training_label = []
+        training_arr = []
 
-        for i in range(0, len(training_set)):
-            training_matrix.append(self.__data_to_vector(vocabulary_list, training_set[i]))
-            training_label.append(training_label_set[i])
-        p0_vector, p1_vector, p_spam = self.__naive_bayes_train(np.array(training_matrix), np.array(training_label))
+        for i in range(0, len(train_msg)):
+            training_arr.append(self.__data_to_vector(vocabulary_list, train_msg[i]))
+        p0_vector, p1_vector, p_spam = self.__naive_bayes_train(np.array(training_arr), np.array(train_label))
 
         return p0_vector, p1_vector, p_spam
 
@@ -241,13 +257,13 @@ class NaiveBayesClassifier(object):
                 error += 1
                 spam_but_ham += 1
 
-                # print("Classify spam message to ham message")
+                print("Classify spam message to ham message")
 
             # Classify ham message to spam message
             elif test_label[i] == 0 and res == 1:
                 error += 1
                 ham_but_spam += 1
-                # print("Classify ham message to spam message")
+                print("Classify ham message to spam message")
 
         recall = (correct / (correct + spam_but_ham)) * 100
         precision = (correct / (correct + ham_but_spam)) * 100
@@ -269,7 +285,7 @@ class NaiveBayesClassifier(object):
 
         # Type check
         if type(test_round) is not int:
-            raise TypeError("Wrong type! Given 'round' parameter should be integer!")
+            raise TypeError("Wrong type! 'round' parameter should be integer!")
         if test_round < 1:
             raise ValueError("Round # should larger than 1!")
 
@@ -284,7 +300,11 @@ class NaiveBayesClassifier(object):
 
             # Timer start
             start = time.clock()
+
+            # Training Naive Bayes model
             p0_vector, p1_vector, p_spam = self.__training_bayes_model(training, training_label, vocabulary_list)
+
+            # Test accuracy
             res = self.__check_accuracy(test_set, test_label_set, vocabulary_list, p0_vector, p1_vector, p_spam)
 
             # Timer end
@@ -314,8 +334,11 @@ class NaiveBayesClassifier(object):
         """
 
         msg = self.__convert_to_text_list(msg)
+
         training, training_label, test_set, test_label_set, vocabulary_list = self.__read_data()
+
         p0_vector, p1_vector, p_spam = self.__training_bayes_model(training, training_label, vocabulary_list)
+
         v = self.__data_to_vector(vocabulary_list, msg)
         res = self.__naive_bayes_classification(np.array(v), p0_vector, p1_vector, p_spam)
         if res == 1:
@@ -328,5 +351,8 @@ class NaiveBayesClassifier(object):
 
 
 if __name__ == '__main__':
-    c = NaiveBayesClassifier(20, 10)
-    c.performance(1)
+    # c = NaiveBayesClassifier(20, 10)
+    # c.performance(1)
+    msg = "Hi I'm sue. I am 20 years old and work as a lapdancer. I love sex. Text me live - I'm i my bedroom now. text SUE to 89555. By TextOperator G2 1DA 150ppmsg 18+"
+    NaiveBayesClassifier(1000, 1).single_input_classification(msg)
+    # single_test(msg, 200, 10)
