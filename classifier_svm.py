@@ -163,6 +163,10 @@ class SVMClassifier(object):
         :param vocabulary_list:
         :return:
         """
+
+        print('Start training SVM model. ')
+        start = time.clock()
+
         data = []
         label = []
         for i in range(0, len(training_messages)):
@@ -176,9 +180,15 @@ class SVMClassifier(object):
         kernel function: gaussian (rbf)
         """
         # kernel function: gaussian
-        out = svm.SVC(C=12, kernel='linear')
+        out = svm.SVC(C=10, kernel='linear')
 
         model = out.fit(data, label)
+
+        end = time.clock()
+        total_time = end - start
+
+        print("Total training time: %.2fs" % total_time)
+        print('SVM model completed. ')
 
         if self.plot:
             plot.svm_plot(data, label)
@@ -203,11 +213,15 @@ class SVMClassifier(object):
             if res == test_label[i]:
                 correct += 1
             elif res == 1 and test_label[i] == 0:
-                # print("Classify ham message to spam message")
+
+                print("Classify ham message to spam message")
+
                 error += 1
                 ham_but_spam += 1
             elif res == 0 and test_label[i] == 1:
-                # print("Classify spam message to ham message")
+
+                print("Classify spam message to ham message")
+
                 error += 1
                 spam_but_ham += 1
 
@@ -220,7 +234,7 @@ class SVMClassifier(object):
         print('Precision: %.2f%%' % precision)
         print('Error Rate: %.2f%%' % err)
         print('')
-        return recall, precision, error
+        return recall, precision, err
 
     def performance(self, test_round):
         """

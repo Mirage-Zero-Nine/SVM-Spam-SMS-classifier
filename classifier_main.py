@@ -51,8 +51,6 @@ if __name__ == '__main__':
     """
     Unit test
     """
-    # statistics(bayes(20, 20, 1), svm(20, 20, 1))
-    msg = "Our biggest sale of the year is coming to a close, don't miss your chance to save up to 50% on your favorites including Epionce, SkinMedica, Jurlique, and many more!"
-    single_test(msg, 400, 1)
-
-
+    statistics(bayes(50, 100, 5), svm(50, 100, 5))
+    # msg = "Our biggest sale of the year is coming to a close, don't miss your chance to save up to 50% on your favorites including Epionce, SkinMedica, Jurlique, and many more!"
+    # single_test(msg, 400, 1)

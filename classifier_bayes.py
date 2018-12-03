@@ -129,17 +129,32 @@ class NaiveBayesClassifier(object):
             vocal_list = vocal_list | set(document)
         return list(vocal_list)
 
-    @staticmethod
-    def __naive_bayes_train(data, label):
+    def __training_bayes_model(self, train_msg, train_label, vocabulary_list):
         """
-        Training Naive Bayes model.
-        :param data: training data
-        :param label: training label
-        :return:
+        Generate word frequency vector for each message and train Naive Bayes classifier.
+        :param train_msg:
+        :param train_label:
+        :param vocabulary_list:
+        :return: p0_vector, p1_vector, p_spam
         """
-        data_length = len(data)
+        print('Start training Bayes model. ')
+        start = time.clock()
+
+        # Create message vector for each training message and append each message's label
+        training_arr = []
+
+        print('Start converting message to vector. ')
+
+        for i in range(0, len(train_msg)):
+            training_arr.append(self.__data_to_vector(vocabulary_list, train_msg[i]))
+
+        print('Converted to vector. ')
+
+        data = np.array(training_arr)
+        label = np.array(train_label)
+
         n_words = len(data[0])
-        spam_in_total_msg = np.sum(label) / data_length
+        spam_in_total_msg = np.sum(label) / len(data)
 
         # Laplace smoothing
         p0_num = np.ones(n_words)
@@ -149,7 +164,7 @@ class NaiveBayesClassifier(object):
         p1_denominator = 2.0
 
         # Calculate probability and total appearance, label 0 for ham message, 1 for spam message
-        for i in range(data_length):
+        for i in range(len(data)):
             if label[i] == 1:
                 p1_num += data[i]
                 p1_denominator += np.sum(data[i])
@@ -160,6 +175,12 @@ class NaiveBayesClassifier(object):
         # use log() to obtain better accuracy
         p1_vector = np.log(p1_num / p1_denominator)
         p0_vector = np.log(p0_num / p0_denominator)
+
+        end = time.clock()
+        total_time = end - start
+
+        print('Naive Bayes model completed. ')
+        print("Total training time: %.2fs" % total_time)
 
         return p0_vector, p1_vector, spam_in_total_msg
 
@@ -207,23 +228,6 @@ class NaiveBayesClassifier(object):
                 # Calculate word frequency
                 out[vocab_list.index(word)] += 1
         return out
-
-    def __training_bayes_model(self, train_msg, train_label, vocabulary_list):
-        """
-        Generate word frequency vector for each message and train Naive Bayes classifier.
-        :param train_msg:
-        :param train_label:
-        :param vocabulary_list:
-        :return: p0_vector, p1_vector, p_spam
-        """
-        # Create message vector for each training message and append each message's label
-        training_arr = []
-
-        for i in range(0, len(train_msg)):
-            training_arr.append(self.__data_to_vector(vocabulary_list, train_msg[i]))
-        p0_vector, p1_vector, p_spam = self.__naive_bayes_train(np.array(training_arr), np.array(train_label))
-
-        return p0_vector, p1_vector, p_spam
 
     def __check_accuracy(self, test_message, test_label, vocabulary_list, p0_vector, p1_vector, p_spam):
         """
