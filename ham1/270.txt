@@ -1,0 +1,1 @@
+could someone please clarify and exemplify the function ( and definition ) of the slash ( " / " ) in hpsg ( head driven grammar ) . many thnaks . michal ephratt ( rhlh702 @ haifauvm )

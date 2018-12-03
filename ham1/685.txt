@@ -1,0 +1,1 @@
+i ' m looking for a good lemmatizer for english and / or a lemmatized corpus . any hints ? thanks in advance . marc
