@@ -41,4 +41,7 @@ def statistics(bayes_out, svm_out):
 
 
 if __name__ == '__main__':
+    """
+    Unit test
+    """
     statistics(bayes(1000, 200, 10), svm(1000, 200, 10))

@@ -275,6 +275,9 @@ class SVMClassifier(object):
 
 
 if __name__ == '__main__':
+    """
+    Unit test
+    """
     # demo(1)
     c = SVMClassifier(20, 10)
     c.single_input_classification(
