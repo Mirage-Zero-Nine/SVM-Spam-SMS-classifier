@@ -7,7 +7,6 @@ File Name: classifier_svm
 Create Time: 2018-12-02 12:29
 '''
 
-import random
 import numpy as np
 import time
 import re
@@ -16,27 +15,24 @@ import plot
 
 
 class SVMClassifier(object):
-    def __init__(self, training_data_size, test_data_size, do_plot=False):
+
+    def __init__(self, training_data_set, training_data_label, test_set, test_label_set, vocabulary_list, plot=False):
+
         """
         Class initialization.
-        :param training_data_size: training message number, default value is 200 (2 < size < 1540)
-        :param test_data_size: test message number, default value is 50
-        :param do_plot: whether plot data via t-SNE, default is False
+        :param training_data_set: training data set (message set)
+        :param training_data_label: each training message's label in training data set
+        :param test_set: data set that contains test messages
+        :param test_label_set: each test message's label in test data set
+        :param vocabulary_list: vocabulary list for training data set
         """
-        if (isinstance(training_data_size, int) is False) or (isinstance(test_data_size, int) is False):
-            raise TypeError("Size should be integer!")
 
-        if training_data_size < 3:
-            raise ValueError("Training data size should larger than 2!")
-        elif training_data_size > 1540:
-            raise ValueError("Training data size too large, insufficient messages amount.")
-        elif test_data_size < 1:
-            raise ValueError("Test message number should larger than 1!")
-        if training_data_size + test_data_size > 5996:
-            raise ValueError("Larger than all messages!")
-        self.train_size = training_data_size
-        self.test_size = test_data_size
-        self.plot = do_plot
+        self.training_set = training_data_set
+        self.training_label = training_data_label
+        self.test_set = test_set
+        self.test_label = test_label_set
+        self.vocabulary_list = vocabulary_list
+        self.plot = plot
 
     @staticmethod
     def __create_vocabulary_list(data):
@@ -57,8 +53,13 @@ class SVMClassifier(object):
         :param string: given string
         :return: word list
         """
-        list_of_tokens = re.split(r'\W+', string)
-        return [tok.lower() for tok in list_of_tokens if len(tok) > 2]
+        words_list = re.split(r'\W+', string)
+        remove = ['the', 'are', 'this', 'that', 'and', 'with', 'for']
+        res = []
+        for w in words_list:
+            if len(w) > 2 and w.lower() not in remove:
+                res.append(w)
+        return res
 
     @staticmethod
     def __data_to_vector(vocab_list, input_set):
@@ -73,86 +74,11 @@ class SVMClassifier(object):
     def __read_data(self):
         """
         Generate both training set and test set for Naive Bayes classifier model.
-        :return: training_data_set, training_data_label, test_set, test_label_set, vocabulary_list
+        This funcrion was wrapped in read_data_file.py for identical data set input to both classifier.
+        :return: training set, corresponding training messages label, test set, corresponding label, vocabulary
         """
 
-        # Check if value is legal
-        if self.train_size + self.test_size > 5996:
-            raise ValueError("Larger than all messages!")
-
-        msg_list = []
-        msg_label_list = []
-
-        print("Start loading messages.")
-
-        # Read all spam messages (771 in total)
-        for i in range(1, 455):
-            spam = self.__convert_to_text_list(open('spam1/%d.txt' % i).read())
-            msg_list.append(spam)
-            msg_label_list.append(1)
-
-        print("All spam messages loaded. ")
-
-        # Read all ham messages (4825 in total)
-        for i in range(1, 2412):
-            ham = self.__convert_to_text_list(open('ham1/%d.txt' % i).read())
-            msg_list.append(ham)
-            msg_label_list.append(0)
-
-        print("All ham messages loaded. ")
-
-        vocabulary_list = self.__create_vocabulary_list(msg_list)
-
-        print("Vocabulary list created. ")
-
-        training_data_set = []
-        training_data_label = []
-        test_set = []
-        test_label_set = []
-
-        print("Create training spam set. ")
-
-        # Create training set (spam)
-        while len(training_data_set) < int(self.train_size / 2):
-            index = random.randint(0, len(msg_list) - 1)
-            if msg_label_list[index] == 1:
-                training_data_set.append(msg_list[index])
-                training_data_label.append(msg_label_list[index])
-
-                # Avoid duplication
-                del msg_list[index]
-                del msg_label_list[index]
-
-        print("Training spam set created. ")
-        print("Create training ham set. ")
-
-        # Create training set (ham)
-        while len(training_data_set) < self.train_size:
-            index = random.randint(0, len(msg_list) - 1)
-            if msg_label_list[index] == 0:
-                training_data_set.append(msg_list[index])
-                training_data_label.append(msg_label_list[index])
-
-                # Avoid duplication
-                del msg_list[index]
-                del msg_label_list[index]
-
-        print("Training ham set created. ")
-        print("Create test set. ")
-
-        # Create test set
-        for i in range(0, self.test_size):
-            index = random.randint(0, len(msg_list) - 1)
-            test_set.append(msg_list[index])
-            test_label_set.append(msg_label_list[index])
-
-            # Avoid duplication
-            del msg_list[index]
-            del msg_label_list[index]
-
-        print("Data set created. ")
-
-        return training_data_set, training_data_label, test_set, test_label_set, vocabulary_list
+        return self.training_set, self.training_label, self.test_set, self.test_label, self.vocabulary_list
 
     def __svm_training(self, training_messages, training_label, vocabulary_list):
         """
@@ -236,51 +162,27 @@ class SVMClassifier(object):
         print('')
         return recall, precision, err
 
-    def performance(self, test_round):
+    def performance(self):
         """
         Running whole classifier.
-        :param test_round: running round for testing.
-        :return: time, recall rate, precision rate, error rate for each round respectively, wrapped in a list
+        :return: time, recall rate, precision, error rate
         """
 
-        # Type check
-        if type(test_round) is not int:
-            raise TypeError("Wrong type! Given 'round' parameter should be integer!")
-        if test_round < 1:
-            raise ValueError("Round # should larger than 1!")
+        # Read data
+        training, training_label, test_set, test_label_set, vocabulary_list = self.__read_data()
 
-        time_list, recall_list, precision_list, error_list = np.zeros(test_round, dtype=float), \
-                                                             np.zeros(test_round, dtype=float), \
-                                                             np.zeros(test_round, dtype=float), \
-                                                             np.zeros(test_round, dtype=float)
+        # Timer start
+        start = time.clock()
+        svm_model = self.__svm_training(training, training_label, vocabulary_list)
+        res = self.__check_accuracy(svm_model, test_set, test_label_set, vocabulary_list)
 
-        # Test
-        for i in range(0, test_round):
-            training, training_label, test_set, test_label_set, vocabulary_list = self.__read_data()
+        # Timer end
+        end = time.clock()
+        t = end - start
+        print("SVM Classifier Round Time: %.2f" % t)
 
-            # Timer start
-            start = time.clock()
-            svm_model = self.__svm_training(training, training_label, vocabulary_list)
-            res = self.__check_accuracy(svm_model, test_set, test_label_set, vocabulary_list)
-
-            # Timer end
-            end = time.clock()
-            t = end - start
-            print("SVM Classifier Round Time: %.2f" % t)
-
-            # Add time
-            time_list[i] = t
-
-            # Add recall rate
-            recall_list[i] = res[0]
-
-            # Add precision
-            precision_list[i] = res[1]
-
-            # Add error rate
-            error_list[i] = res[2]
-
-        return time_list, recall_list, precision_list, error_list
+        # Return time, recall rate, precision, error rate
+        return t, res[0], res[1], res[2]
 
     def single_input_classification(self, msg):
         """
@@ -312,6 +214,7 @@ if __name__ == '__main__':
     Unit test
     """
     # demo(1)
-    c = SVMClassifier(1000, 10)
-    c.single_input_classification(
-        "Hi I'm sue. I am 20 years old and work as a lapdancer. I love sex. Text me live - I'm i my bedroom now. text SUE to 89555. By TextOperator G2 1DA 150ppmsg 18+")
+    # c = SVMClassifier(1000, 10)
+    # c.single_input_classification(
+    #     "Hi I'm sue. I am 20 years old and work as a lapdancer. I love sex. Text me live - I'm i my bedroom now. text SUE to 89555. By TextOperator G2 1DA 150ppmsg 18+")
+    pass
