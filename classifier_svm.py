@@ -140,13 +140,13 @@ class SVMClassifier(object):
                 correct += 1
             elif res == 1 and test_label[i] == 0:
 
-                print("Classify ham message to spam message")
+                # print("Classify ham message to spam message")
 
                 error += 1
                 ham_but_spam += 1
             elif res == 0 and test_label[i] == 1:
 
-                print("Classify spam message to ham message")
+                # print("Classify spam message to ham message")
 
                 error += 1
                 spam_but_ham += 1
@@ -159,7 +159,6 @@ class SVMClassifier(object):
         print('Recall Rate: %.2f%%' % recall)
         print('Precision: %.2f%%' % precision)
         print('Error Rate: %.2f%%' % err)
-        print('')
         return recall, precision, err
 
     def performance(self):
@@ -171,18 +170,29 @@ class SVMClassifier(object):
         # Read data
         training, training_label, test_set, test_label_set, vocabulary_list = self.__read_data()
 
-        # Timer start
-        start = time.clock()
+        # Training timer
+        train_start = time.clock()
+
+        # Training SVM model
         svm_model = self.__svm_training(training, training_label, vocabulary_list)
+
+        train_end = time.clock()
+        train_time = train_end - train_start
+
+        # Test timer
+        test_start = time.clock()
+
         res = self.__check_accuracy(svm_model, test_set, test_label_set, vocabulary_list)
 
         # Timer end
-        end = time.clock()
-        t = end - start
-        print("SVM Classifier Round Time: %.2f" % t)
+        test_end = time.clock()
+        test_time = test_end - test_start
 
-        # Return time, recall rate, precision, error rate
-        return t, res[0], res[1], res[2]
+        print("Naive Bayes Classifier Round Time: %.2fs" % (test_end - train_start))
+        print('')
+
+        # Return training time, test time, recall rate, precision, error rate
+        return train_time, test_time, res[0], res[1], res[2]
 
     def single_input_classification(self, msg):
         """

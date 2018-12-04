@@ -83,7 +83,6 @@ class NaiveBayesClassifier(object):
         """
         print('Start training Naive Bayes model. ')
         print('Size of vocabulary list: %d' % len(vocabulary_list))
-        start = time.clock()
 
         # Create message vector for each training message and append each message's label
         training_arr = []
@@ -118,11 +117,7 @@ class NaiveBayesClassifier(object):
         p1_vector = np.log(p1_num / p1_denominator)
         p0_vector = np.log(p0_num / p0_denominator)
 
-        end = time.clock()
-        total_time = end - start
-
         print('Naive Bayes model created. ')
-        print("Total training time: %.2fs " % total_time)
 
         return p0_vector, p1_vector, spam_in_total_msg
 
@@ -186,13 +181,13 @@ class NaiveBayesClassifier(object):
                 error += 1
                 spam_but_ham += 1
 
-                print("Classify spam message to ham message!")
+                # print("Classify spam message to ham message!")
 
             # Classify ham message to spam message
             elif test_label[i] == 0 and res == 1:
                 error += 1
                 ham_but_spam += 1
-                print("Classify ham message to spam message!")
+                # print("Classify ham message to spam message!")
 
         recall = (correct / (correct + spam_but_ham)) * 100
         precision = (correct / (correct + ham_but_spam)) * 100
@@ -213,23 +208,30 @@ class NaiveBayesClassifier(object):
         # Read data
         training, training_label, test_set, test_label_set, vocabulary_list = self.__read_data()
 
-        # Timer start
-        start = time.clock()
+        # Training timer
+        train_start = time.clock()
 
         # Training Naive Bayes model
         p0_vector, p1_vector, p_spam = self.__training_bayes_model(training, training_label, vocabulary_list)
+
+        train_end = time.clock()
+        train_time = train_end - train_start
+
+        # Test timer
+        test_start = time.clock()
 
         # Test accuracy
         res = self.__check_accuracy(test_set, test_label_set, vocabulary_list, p0_vector, p1_vector, p_spam)
 
         # Timer end
-        end = time.clock()
-        t = end - start
-        print("Naive Bayes Classifier Round Time: %.2fs" % t)
+        test_end = time.clock()
+        test_time = test_end - test_start
+
+        print("Naive Bayes Classifier Round Time: %.2fs" % (test_end - train_start))
         print('')
 
-        # Return time, recall rate, precision, error rate
-        return t, res[0], res[1], res[2]
+        # Return training time, test time, recall rate, precision, error rate
+        return train_time, test_time, res[0], res[1], res[2]
 
     def single_input_classification(self, msg):
         """

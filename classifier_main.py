@@ -28,17 +28,19 @@ def svm(training, training_label, test_set, test_label_set, vocabulary_list):
 def stat_all(bayes_out, svm_out, r):
     print("")
     print("Naive Bayes Classifier Statistics for %d rounds:" % r)
-    print("Average time: %.2fs" % np.mean(bayes_out[0]))
-    print("Average recall rate: %.2f%%" % np.mean(bayes_out[1]))
-    print("Average precision rate: %.2f%%" % np.mean(bayes_out[2]))
-    print("Average error rate: %.2f%%" % np.mean(bayes_out[3]))
+    print("Average model training time: %.2fs" % np.mean(bayes_out[0]))
+    print("Average model test time: %.2fs" % np.mean(bayes_out[1]))
+    print("Average recall rate: %.2f%%" % np.mean(bayes_out[2]))
+    print("Average precision rate: %.2f%%" % np.mean(bayes_out[3]))
+    print("Average error rate: %.2f%%" % np.mean(bayes_out[4]))
 
     print("")
     print("SVM Classifier Statistics for %d rounds:" % r)
-    print("Average time: %.2fs" % np.mean(svm_out[0]))
-    print("Average recall rate: %.2f%%" % np.mean(svm_out[1]))
-    print("Average precision rate: %.2f%%" % np.mean(svm_out[2]))
-    print("Average error rate: %.2f%%" % np.mean(svm_out[3]))
+    print("Average model training time: %.2fs" % np.mean(svm_out[0]))
+    print("Average model test time: %.2fs" % np.mean(svm_out[1]))
+    print("Average recall rate: %.2f%%" % np.mean(svm_out[2]))
+    print("Average precision rate: %.2f%%" % np.mean(svm_out[3]))
+    print("Average error rate: %.2f%%" % np.mean(svm_out[4]))
 
 
 def single_test(msg, train_size, test_size):
@@ -59,32 +61,34 @@ def result(tss, ts_size, tr):
     if tr < 1:
         raise ValueError("Round # should larger than 1!")
 
-    bayes_time, bayes_recall, bayes_precision, bayes_err = np.zeros(tr), np.zeros(tr), np.zeros(tr), np.zeros(tr)
+    b_train_time, b_test_time, b_re, b_pre, b_err = np.zeros(tr), np.zeros(tr), np.zeros(tr), np.zeros(tr), np.zeros(tr)
 
-    svm_time, svm_recall, svm_precision, svm_err = np.zeros(tr), np.zeros(tr), np.zeros(tr), np.zeros(tr)
+    s_train_time, s_test_time, s_re, s_pre, s_err = np.zeros(tr), np.zeros(tr), np.zeros(tr), np.zeros(tr), np.zeros(tr)
 
     b = []
     s = []
     for i in range(0, tr):
         training, training_label, test_set, test_label_set, vocabulary_list = get_data_set(tss, ts_size)
 
-        print("Bayes Round %d:" % i + 1)
+        print("Bayes Round %d:" % (i + 1))
         br = bayes(training, training_label, test_set, test_label_set, vocabulary_list)
-        bayes_time[i], bayes_recall[i], bayes_precision[i], bayes_err[i] = br[0], br[1], br[2], br[3]
+        b_train_time[i], b_test_time[i], b_re[i], b_pre[i], b_err[i] = br[0], br[1], br[2], br[3], br[4]
 
-        print("SVM Round %d:" % i + 1)
+        print("SVM Round %d:" % (i + 1))
         sr = svm(training, training_label, test_set, test_label_set, vocabulary_list)
-        svm_time[i], svm_recall[i], svm_precision[i], svm_err[i] = sr[0], sr[1], sr[2], sr[3]
+        s_train_time[i], s_test_time[i], s_re[i], s_pre[i], s_err[i] = sr[0], sr[1], sr[2], sr[3], sr[4]
 
-    b.append(bayes_time)
-    b.append(bayes_recall)
-    b.append(bayes_precision)
-    b.append(bayes_err)
+    b.append(b_train_time)
+    b.append(b_test_time)
+    b.append(b_re)
+    b.append(b_pre)
+    b.append(b_err)
 
-    s.append(svm_time)
-    s.append(svm_recall)
-    s.append(svm_precision)
-    s.append(svm_err)
+    s.append(s_train_time)
+    s.append(s_test_time)
+    s.append(s_re)
+    s.append(s_pre)
+    s.append(s_err)
     stat_all(b, s, tr)
 
 
@@ -93,8 +97,8 @@ if __name__ == '__main__':
     Unit test
     """
 
-    training_set_size = 800
-    test_set_size = 300
+    training_set_size = 1000
+    test_set_size = 400
     test_round = 20
     result(training_set_size, test_set_size, test_round)
     # d = get_data_set(training_set_size, test_set_size)
