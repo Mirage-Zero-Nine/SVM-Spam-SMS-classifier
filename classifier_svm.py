@@ -63,6 +63,12 @@ class SVMClassifier(object):
 
     @staticmethod
     def __data_to_vector(vocab_list, input_set):
+        """
+        Convert word list into integer vector for later processing.
+        :param vocab_list: total words list
+        :param input_set: input message words list
+        :return: message words frequency vector
+        """
         out = [0] * len(vocab_list)
 
         for word in input_set:
@@ -106,7 +112,7 @@ class SVMClassifier(object):
         kernel function: gaussian (rbf)
         """
         # kernel function: gaussian
-        out = svm.SVC(C=10, kernel='linear')
+        out = svm.SVC(C=11, kernel='linear')
 
         model = out.fit(data, label)
 
@@ -122,12 +128,12 @@ class SVMClassifier(object):
 
     def __check_accuracy(self, svm_model, test_message, test_label, vocabulary_list):
         """
-
-        :param svm_model:
-        :param test_message:
-        :param test_label:
-        :param vocabulary_list:
-        :return:
+        Test model accuracy based on test set that is created before.
+        :param svm_model: SVM trained model for classification
+        :param test_message: message to be classify by classifier
+        :param test_label: label of messages
+        :param vocabulary_list: total words in message set
+        :return: recall rate, precision rate, error rate
         """
 
         correct, error, spam_but_ham, ham_but_spam = 0, 0, 0, 0
@@ -188,7 +194,7 @@ class SVMClassifier(object):
         test_end = time.clock()
         test_time = test_end - test_start
 
-        print("Naive Bayes Classifier Round Time: %.2fs" % (test_end - train_start))
+        print("SVM Classifier Round Time: %.2fs" % (test_end - train_start))
         print('')
 
         # Return training time, test time, recall rate, precision, error rate

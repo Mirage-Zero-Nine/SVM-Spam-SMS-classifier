@@ -61,10 +61,10 @@ class NaiveBayesClassifier(object):
     @staticmethod
     def __data_to_vector(vocab_list, input_list):
         """
-
-        :param vocab_list:
-        :param input_list:
-        :return:
+        Convert word list into integer vector for later processing.
+        :param vocab_list: total words list
+        :param input_list: input message words list
+        :return: message words frequency vector
         """
         out = [0] * len(vocab_list)
         for word in input_list:
@@ -83,6 +83,8 @@ class NaiveBayesClassifier(object):
         """
         print('Start training Naive Bayes model. ')
         print('Size of vocabulary list: %d' % len(vocabulary_list))
+
+        start = time.clock()
 
         # Create message vector for each training message and append each message's label
         training_arr = []
@@ -117,7 +119,11 @@ class NaiveBayesClassifier(object):
         p1_vector = np.log(p1_num / p1_denominator)
         p0_vector = np.log(p0_num / p0_denominator)
 
+        end = time.clock()
+        total_time = end - start
+
         print('Naive Bayes model created. ')
+        print("Total training time: %.2fs" % total_time)
 
         return p0_vector, p1_vector, spam_in_total_msg
 
@@ -152,13 +158,13 @@ class NaiveBayesClassifier(object):
     def __check_accuracy(self, test_message, test_label, vocabulary_list, p0_vector, p1_vector, p_spam):
         """
         Test model accuracy based on test set that is created before.
-        :param test_message:
-        :param test_label:
-        :param vocabulary_list:
-        :param p0_vector:
-        :param p1_vector:
-        :param p_spam:
-        :return:
+        :param test_message: message to be classify by classifier
+        :param test_label: label of messages
+        :param vocabulary_list: total words in message set
+        :param p0_vector: the probability vector of this message is ham message
+        :param p1_vector: the probability vector of this message is spam message
+        :param p_spam: spam message partition
+        :return: recall rate, precision rate, error rate
         """
         correct = 0
         error = 0
@@ -258,6 +264,9 @@ class NaiveBayesClassifier(object):
 
 
 if __name__ == '__main__':
+    """
+    Unit test
+    """
     # c = NaiveBayesClassifier(20, 10)
     # c.performance(1)
     # msg = "Hi I'm sue. I am 20 years old and work as a lapdancer. I love sex. Text me live - I'm i my bedroom now. text SUE to 89555. By TextOperator G2 1DA 150ppmsg 18+"

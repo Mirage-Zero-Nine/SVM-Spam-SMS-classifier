@@ -25,9 +25,20 @@ def svm(training, training_label, test_set, test_label_set, vocabulary_list):
     return svm_out
 
 
-def stat_all(bayes_out, svm_out, r):
+def stat_all(bayes_out, svm_out, r, trs, ts):
+    """
+
+    :param bayes_out: bayes model output
+    :param svm_out: svm model output
+    :param r: running rounds
+    :param trs: test size
+    :param ts: training set size
+    :return: None
+    """
     print("")
     print("Naive Bayes Classifier Statistics for %d rounds:" % r)
+    print("Training %d messages" % trs)
+    print("Test %d messages" % ts)
     print("Average model training time: %.2fs" % np.mean(bayes_out[0]))
     print("Average model test time: %.2fs" % np.mean(bayes_out[1]))
     print("Average recall rate: %.2f%%" % np.mean(bayes_out[2]))
@@ -36,6 +47,8 @@ def stat_all(bayes_out, svm_out, r):
 
     print("")
     print("SVM Classifier Statistics for %d rounds:" % r)
+    print("Training %d messages" % trs)
+    print("Test %d messages" % ts)
     print("Average model training time: %.2fs" % np.mean(svm_out[0]))
     print("Average model test time: %.2fs" % np.mean(svm_out[1]))
     print("Average recall rate: %.2f%%" % np.mean(svm_out[2]))
@@ -55,6 +68,13 @@ def get_data_set(training_size, test_size):
 
 
 def result(tss, ts_size, tr):
+    """
+
+    :param tss: Training set size
+    :param ts_size: test set size
+    :param tr: running round
+    :return:
+    """
     # Type check
     if type(tr) is not int:
         raise TypeError("Wrong type! 'round' parameter should be integer!")
@@ -67,6 +87,7 @@ def result(tss, ts_size, tr):
 
     b = []
     s = []
+
     for i in range(0, tr):
         training, training_label, test_set, test_label_set, vocabulary_list = get_data_set(tss, ts_size)
 
@@ -77,6 +98,21 @@ def result(tss, ts_size, tr):
         print("SVM Round %d:" % (i + 1))
         sr = svm(training, training_label, test_set, test_label_set, vocabulary_list)
         s_train_time[i], s_test_time[i], s_re[i], s_pre[i], s_err[i] = sr[0], sr[1], sr[2], sr[3], sr[4]
+
+    print("----------")
+    print(b_train_time)
+    print(b_test_time)
+    print(b_re)
+    print(b_pre)
+    print(b_err)
+
+    print("----------")
+    print(s_train_time)
+    print(s_test_time)
+    print(s_re)
+    print(s_pre)
+    print(s_err)
+    print("----------")
 
     b.append(b_train_time)
     b.append(b_test_time)
@@ -89,7 +125,9 @@ def result(tss, ts_size, tr):
     s.append(s_re)
     s.append(s_pre)
     s.append(s_err)
-    stat_all(b, s, tr)
+    stat_all(b, s, tr, tss, ts_size)
+
+    return
 
 
 if __name__ == '__main__':
@@ -97,13 +135,27 @@ if __name__ == '__main__':
     Unit test
     """
 
+    # t = read_data_file.read(1000, 500)
+    # # print(t[1])
+    # # print(t[3])
+    # spam = 0
+    # sp = 0
+    #
+    # for i in t[1]:
+    #     if i == 1:
+    #         sp += 1
+    #
+    # for i in t[3]:
+    #     if i == 1:
+    #         spam += 1
+    #
+    # print(sp)
+    # print(spam)
+
     training_set_size = 1000
-    test_set_size = 400
+    test_set_size = 500
     test_round = 20
     result(training_set_size, test_set_size, test_round)
-    # d = get_data_set(training_set_size, test_set_size)
-    # b = bayes(d[0], d[1], d[2], d[3], d[4], test_round)
-    # s = svm(d[0], d[1], d[2], d[3], d[4], test_round)
-    # statistics(b, s)
+
     # msg = "Our biggest sale of the year is coming to a close, don't miss your chance to save up to 50% on your favorites including Epionce, SkinMedica, Jurlique, and many more!"
     # single_test(msg, 400, 1)

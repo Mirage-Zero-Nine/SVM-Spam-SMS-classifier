@@ -108,27 +108,40 @@ def read(train_size, test_size):
             del msg_list[index]
             del msg_label_list[index]
 
-    # Count spam message and ham message in test set
-    s = 0
-    h = 0
-
     # Create test set
-    for i in range(0, test_size):
+    while len(test_set) < int(test_size / 4):
         index = random.randint(0, len(msg_list) - 1)
         if msg_label_list[index] == 1:
-            s += 1
-        else:
-            h += 1
-        test_set.append(msg_list[index])
-        test_label_set.append(msg_label_list[index])
+            test_set.append(msg_list[index])
+            test_label_set.append(msg_label_list[index])
 
-        # Avoid duplication
-        del msg_list[index]
-        del msg_label_list[index]
+            # Avoid duplication
+            del msg_list[index]
+            del msg_label_list[index]
+
+    while len(test_set) < test_size:
+        index = random.randint(0, len(msg_list) - 1)
+        if msg_label_list[index] == 0:
+            test_set.append(msg_list[index])
+            test_label_set.append(msg_label_list[index])
+
+            # Avoid duplication
+            del msg_list[index]
+            del msg_label_list[index]
+
+    # Count spam message and ham message in test set
+    # s = 0
+    # h = 0
+    # for i in range(0, len(test_label_set)):
+    #     if test_label_set[i] == 1:
+    #         s += 1
+    #     else:
+    #         h += 1
 
     print("Training set and test set created. ")
-    print("Spam message in training set: %d " % s)
-    print("Ham message in training set: %d " % h)
+
+    # print("Spam message in test set: %d " % s)
+    # print("Ham message in test set: %d " % h)
 
     print("Creating vocabulary list of training data set. ")
     vocabulary_list = __create_vocabulary_list(training_data_set)
