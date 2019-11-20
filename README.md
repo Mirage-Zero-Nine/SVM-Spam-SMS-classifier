@@ -1,4 +1,4 @@
-# SVM-Spam-SMS-classifier
+# SVM Spam SMS Classifier
 
 ## Introduction
 This repo is an implementation of SVM (Support Vector Machine) classifier to classify spam message and ham message. Also, a Naive Bayes classifier is included as a comparison. 
